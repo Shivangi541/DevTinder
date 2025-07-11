@@ -1,12 +1,25 @@
 const express = require("express");
 const app = express();
 
+app.use(express.json());
+app.get("/users", (req, res) => {
+  res.send("Users route is working!");
+});
+app.post("/users", (req, res) => {
+  const userData = req.body;
+
+  console.log("Received data:", userData);
+
+  // Simulate saving to database
+  res.status(201).send({
+    message: "User created successfully!",
+    data: userData,
+  });
+});
 app.use("/test", (req, res) => {
   res.send("Test route is working!");
 });
-// app.use("/", (req, res) => {
-//   res.send("Hello, World!");
-// }); // request handler
+
 app.listen(3000, () => {
   console.log("Server is successfully running on port 3000");
 });
