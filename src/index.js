@@ -2,9 +2,10 @@ const express = require("express");
 const app = express();
 
 app.use(express.json());
-app.get("/users", (req, res) => {
+app.get("/users/:userID/:name/:password", (req, res) => {
+  console.log(req.params);
   res.send("Users route is working!");
-});
+}); // dynamic route for testing
 app.post("/users", (req, res) => {
   const userData = req.body;
 
@@ -15,7 +16,7 @@ app.post("/users", (req, res) => {
     message: "User created successfully!",
     data: userData,
   });
-});
+}); // static route for testing
 app.use("/test", (req, res) => {
   res.send("Test route is working!");
 });
