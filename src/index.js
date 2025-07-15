@@ -3,6 +3,7 @@ const { adminAuth, userAuth } = require("./middlewares/admin_userAuth");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
+const { ReturnDocument } = require("mongodb");
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
@@ -69,7 +70,47 @@ app.delete("/user", async (req, res) => {
   }
 });
 //update api
+app.patch("/user", async (req, res) => {
+  const userId = req.body._id;
+  const data = req.body;
+  try {
+    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+      returnDocument: "after",
+    });
 
+    if (!user) {
+      return res.status(404).send("User not found");
+    } else {
+      res.send("User updated successfully");
+      console.log("User updated successfully:", user);
+    }
+  } catch (error) {
+    res.status(400).send("Error updating user: " + error.message);
+  }
+});
+app.patch("/user", async (req, res) => {
+  const emailId = req.body.email;
+  const data = req.body;
+  try {
+    const user = await User.findOneAndUpdate(
+      {
+        email: emailId,
+      },
+      data,
+      {
+        returnDocument: "after",
+      }
+    );
+    if (!user) {
+      return res.status(404).send("User not found");
+    } else {
+      res.send("User updated successfully");
+      console.log("User updated successfully:", user);
+    }
+  } catch (error) {
+    res.status(400).send("Error updating user: " + error.message);
+  }
+});
 connectDB()
   .then(() => {
     console.log("Database connected successfully to 'devtinder'");
