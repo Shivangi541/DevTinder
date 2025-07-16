@@ -71,10 +71,17 @@ app.delete("/user", async (req, res) => {
   }
 });
 //update api
-app.patch("/user", async (req, res) => {
-  const userId = req.body._id;
+app.patch("/user/:_id", async (req, res) => {
+  const userId = req.params?._id;
   const data = req.body;
   try {
+    const allowed_updates = ["about", "lastName", "skills", "password", "age"];
+    const isallowedUpdates = Object.keys(data).every((k) => {
+      allowed_updates.includes(k);
+    });
+    if (!isallowedUpdates) {
+      return res.status(400).send("Invalid updates");
+    }
     const user = await User.findByIdAndUpdate({ _id: userId }, data, {
       returnDocument: "after",
       runValidators: true,
