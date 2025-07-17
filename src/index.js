@@ -5,10 +5,27 @@ const app = express();
 const User = require("./models/user");
 const { ReturnDocument } = require("mongodb");
 app.use(express.json());
-
+const bcrypt = require("bcrypt");
+const { validateUserInput } = require("./utils/validation");
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
+  const { firstName, lastName, email, password } = req.body;
   try {
+    // validation
+    const validationError = validateUserInput(req);
+    if (validationError) {
+      return res.status(400).send(validationError);
+    }
+
+    // encrypt password
+    const passwordHash = await bcrypt.hash(password, 10);
+    console.log("Password hashed successfully" + passwordHash);
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: passwordHash,
+    });
+
     await user.save();
     res.status(201).send("User created successfully");
     console.log("User created successfully:", user);
