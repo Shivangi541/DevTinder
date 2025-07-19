@@ -5,7 +5,10 @@ const app = express();
 const User = require("./models/user");
 const { ReturnDocument } = require("mongodb");
 app.use(express.json());
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { validateUserInput } = require("./utils/validation");
 app.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
@@ -47,6 +50,14 @@ app.post("/login", async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).send("Invalid password");
+    } else {
+      // jwt auhorization
+      const token = jwt.sign({ _id: user._id }, "your_jwt_secret_key");
+      console.log("JWT token generated successfully:", token);
+      // cookie validation
+      res.cookie("token", token);
+      res.send("Login successful");
+      console.log("User logged in successfully:", user);
     }
   } catch (error) {
     res.status(400).send("Error logging in: " + error.message);
@@ -64,6 +75,29 @@ app.get("/user", async (req, res) => {
     }
   } catch (error) {
     res.status(400).send("Error fetching user: ", error.message);
+  }
+});
+//profile api
+app.get("/profile", async (req, res) => {
+  try {
+    const cookie = req.cookies;
+
+    const { token } = cookie;
+    console.log("JWT token from cookie:", token);
+    //validate the token here
+    if (!token) {
+      throw new Error("No token found in cookies");
+    }
+    const decodedMessage = jwt.verify(token, "your_jwt_secret_key");
+    console.log("Decoded JWT token:", decodedMessage);
+    const user = await User.findById(decodedMessage._id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    res.send(user);
+    console.log("User profile fetched successfully:", user);
+  } catch (error) {
+    res.status(400).send("Error reading cookie: " + error.message);
   }
 });
 // feed api get api
