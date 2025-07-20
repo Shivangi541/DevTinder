@@ -4,7 +4,7 @@ const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
 const auth = require("./middlewares/auth");
-const { ReturnDocument } = require("mongodb");
+
 app.use(express.json());
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -48,15 +48,16 @@ app.post("/login", async (req, res) => {
     if (!user) {
       return res.status(404).send("User not found");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
     if (!isPasswordValid) {
       return res.status(401).send("Invalid password");
     } else {
       // jwt auhorization
-      const token = jwt.sign({ _id: user._id }, "your_jwt_secret_key");
-      console.log("JWT token generated successfully:", token);
+      const token = user.getJWt();
       // cookie validation
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      });
       res.send("Login successful");
       console.log("User logged in successfully:", user);
     }
@@ -64,20 +65,7 @@ app.post("/login", async (req, res) => {
     res.status(400).send("Error logging in: " + error.message);
   }
 });
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.email;
-  try {
-    const user = await User.findOne({ email: userEmail });
-    if (!user || user.length === 0) {
-      return res.status(404).send("User not found");
-    } else {
-      res.send(user);
-      console.log("User fetched successfully:", user);
-    }
-  } catch (error) {
-    res.status(400).send("Error fetching user: ", error.message);
-  }
-});
+
 //profile api
 app.get("/profile", auth, async (req, res) => {
   try {
@@ -92,95 +80,13 @@ app.get("/profile", auth, async (req, res) => {
     res.status(400).send("Error reading cookie: " + error.message);
   }
 });
-// feed api get api
-app.get("/feed", async (req, res) => {
+app.post("/sendConnectionRequest", auth, async (req, res) => {
   try {
-    const users = await User.find({});
-    res.send(users);
-    console.log("Feed fetched successfully:", users);
+    const user = req.user;
+    res.send("Connection request sent successfully");
+    console.log(user.firstName + " sent the connection request successfully");
   } catch (error) {
-    res.status(400).send("Error fetching feed: ", error.message);
-  }
-});
-// demo for findById()
-app.get("/userbyID/:id", async (req, res) => {
-  const _id = req.params.id;
-  try {
-    const user = await User.findById(_id);
-    if (!user) {
-      return res.status(404).send("User not found");
-    } else {
-      res.send(user);
-      console.log("User fetched successfully by ID:", user);
-    }
-  } catch (error) {
-    res.status(400).send("Error fetching user by ID: ", error.message);
-  }
-});
-//delete api
-app.delete("/user", async (req, res) => {
-  const userEmail = req.body.email;
-  try {
-    const user = await User.findOneAndDelete({ email: userEmail });
-    if (!user) {
-      return res.status(404).send("User not found");
-    } else {
-      res.send("User deleted successfully");
-      console.log("User deleted successfully:", user);
-    }
-  } catch (error) {
-    res.status(400).send("Error deleting user: " + error.message);
-  }
-});
-//update api
-app.patch("/user/:_id", async (req, res) => {
-  const userId = req.params?._id;
-  const data = req.body;
-  try {
-    const allowed_updates = ["about", "lastName", "skills", "password", "age"];
-    const isallowedUpdates = Object.keys(data).every((k) => {
-      allowed_updates.includes(k);
-    });
-    if (!isallowedUpdates) {
-      return res.status(400).send("Invalid updates");
-    }
-    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
-
-    if (!user) {
-      return res.status(404).send("User not found");
-    } else {
-      res.send("User updated successfully");
-      console.log("User updated successfully:", user);
-    }
-  } catch (error) {
-    res.status(400).send("Error updating user: " + error.message);
-  }
-});
-app.patch("/user", async (req, res) => {
-  const emailId = req.body.email;
-  const data = req.body;
-  try {
-    const user = await User.findOneAndUpdate(
-      {
-        email: emailId,
-      },
-      data,
-      {
-        returnDocument: "after",
-        runValidators: true,
-      }
-    );
-    if (!user) {
-      return res.status(404).send("User not found");
-    } else {
-      res.send("User updated successfully");
-      console.log("User updated successfully:", user);
-    }
-  } catch (error) {
-    res.status(400).send("Error updating user: " + error.message);
+    res.status(400).send("Error sending connection request: " + error.message);
   }
 });
 connectDB()

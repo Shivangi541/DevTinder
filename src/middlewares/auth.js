@@ -8,7 +8,9 @@ const auth = async (req, res, next) => {
     if (!token) {
       throw new Error("No token found in cookies");
     }
-    const decodedMessage = jwt.verify(token, "your_jwt_secret_key");
+    const decodedMessage = jwt.verify(token, "your_jwt_secret_key", {
+      expiresIn: "7d", // 8 hours
+    });
     console.log("Decoded JWT token:", decodedMessage);
     const userId = decodedMessage._id;
     if (!userId) {
