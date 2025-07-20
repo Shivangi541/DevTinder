@@ -1,8 +1,9 @@
 const express = require("express");
-const { adminAuth, userAuth } = require("./middlewares/admin_userAuth");
+
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
+const auth = require("./middlewares/auth");
 const { ReturnDocument } = require("mongodb");
 app.use(express.json());
 const cookieParser = require("cookie-parser");
@@ -78,24 +79,15 @@ app.get("/user", async (req, res) => {
   }
 });
 //profile api
-app.get("/profile", async (req, res) => {
+app.get("/profile", auth, async (req, res) => {
   try {
-    const cookie = req.cookies;
+    const user = req.user;
 
-    const { token } = cookie;
-    console.log("JWT token from cookie:", token);
-    //validate the token here
-    if (!token) {
-      throw new Error("No token found in cookies");
-    }
-    const decodedMessage = jwt.verify(token, "your_jwt_secret_key");
-    console.log("Decoded JWT token:", decodedMessage);
-    const user = await User.findById(decodedMessage._id);
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("User not found in request");
     }
     res.send(user);
-    console.log("User profile fetched successfully:", user);
+    console.log("Profile fetched successfully:", user);
   } catch (error) {
     res.status(400).send("Error reading cookie: " + error.message);
   }
