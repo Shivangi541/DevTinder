@@ -53,8 +53,9 @@ const userSchema = mongoose.Schema(
     },
     skills: {
       type: [String],
+      default: undefined,
       validate(value) {
-        if (value.length > 10) {
+        if (value && value.length > 10) {
           throw new Error("Skills array exceeds maximum length of 10");
         }
       },

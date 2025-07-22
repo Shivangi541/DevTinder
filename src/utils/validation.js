@@ -18,6 +18,14 @@ const validateUserInput = (req) => {
 
   return null; // no error
 };
+const validateEditinfo = (req) => {
+  const allowedEdits = ["age", "gender", "about", "skills"];
+  const isValidEdit = Object.keys(req.body).every((field) =>
+    allowedEdits.includes(field)
+  );
+  return isValidEdit;
+};
 module.exports = {
   validateUserInput,
+  validateEditinfo,
 };
