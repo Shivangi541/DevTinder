@@ -7,6 +7,7 @@ const userSchema = mongoose.Schema(
     firstName: {
       type: String,
       required: true,
+      index: true, // index is created for faster search
     },
     lastName: {
       type: String,
@@ -14,7 +15,8 @@ const userSchema = mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
+      unique: true, // unique index is created
+      // unique index is faster
       lowercase: true,
       trim: true,
       validate(value) {
@@ -26,7 +28,7 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
       required: true,
-      unique: true,
+      unique: true, // unique index is created
       minlength: 6,
       validate(value) {
         if (value.toLowerCase().includes("password")) {
