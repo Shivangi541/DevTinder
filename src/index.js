@@ -9,10 +9,12 @@ app.use(cookieParser());
 const authRouter = require("@routes/auth_route");
 const requestRouter = require("@routes/request");
 const profileRouter = require("@routes/profile_route");
+const userRouter = require("@routes/user_route");
 
 app.use("/", authRouter);
 app.use("/", requestRouter);
 app.use("/", profileRouter);
+app.use("/", userRouter);
 connectDB()
   .then(() => {
     console.log("Database connected successfully to 'devtinder'");

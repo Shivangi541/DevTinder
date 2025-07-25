@@ -17,6 +17,6 @@
 - POST/request/review/rejected/:requestID
 
 - coreApi users
-- GET users/connections
+- GET users/connections/pending
 - GET users/request/received
 - GET users/feed

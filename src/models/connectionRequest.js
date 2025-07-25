@@ -4,6 +4,7 @@ const connectionSchema = mongoose.Schema(
     fromUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "User",
     },
     toUserId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -23,13 +24,13 @@ const connectionSchema = mongoose.Schema(
   }
 );
 connectionSchema.index({ fromUserId: 1, toUserId: 1 });
-connectionSchema.pre("save", function () {
-  const connectionRequest = this;
-  if (connectionRequest.fromUserId.equals(connectionRequest.toUserId)) {
-    throw new Error("You cannot send a connection request to yourself.");
-  }
-  next();
-});
+// connectionSchema.pre("save", function () {
+//   const connectionRequest = this;
+//   if (connectionRequest.fromUserId.equals(connectionRequest.toUserId)) {
+//     throw new Error("You cannot send a connection request to yourself."); // api level validation can also be made
+//   }
+//   next();
+// });
 
 const ConnectionRequest = mongoose.model("ConnectionRequest", connectionSchema);
 module.exports = ConnectionRequest;
