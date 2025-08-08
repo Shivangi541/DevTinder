@@ -1,11 +1,13 @@
 require("module-alias/register");
 const express = require("express");
-
+const cors = require("cors");
 const connectDB = require("./config/database");
 const app = express();
+app.use(cors());
 app.use(express.json());
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
+
 const authRouter = require("@routes/auth_route");
 const requestRouter = require("@routes/request");
 const profileRouter = require("@routes/profile_route");
